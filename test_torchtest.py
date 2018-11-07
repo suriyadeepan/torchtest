@@ -24,4 +24,6 @@ if __name__ == '__main__':
   batch = [ torch.randint(0, 100, (10, 15)).long(), torch.randint(0, 2, (10,)).long() ]
  
   # test variable change
-  _var_change_helper(True, model, F.cross_entropy, torch.optim.Adam, batch)
+  _var_change_helper(True, model, F.cross_entropy, 
+      torch.optim.Adam([p for p in model.parameters() if p.requires_grad]), 
+      batch)
