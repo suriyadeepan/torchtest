@@ -1,0 +1,32 @@
+= TorchTest
+
+A Simple Testing Framework for PyTorch, inspired by [mltest](https://github.com/Thenerdstation/mltest/blob/master/mltest/mltest.py) 
+
+
+== Tests
+
+* Variables Change \/ Don't Change
+
+* Logits Range
+
+* Input Dependencies
+
+* NaN and Inf Tensors
+
+
+== Notes
+
+=== Gradient Check
+
+* https://discuss.pytorch.org/t/interpreting-gradcheck-errors/16239[How to interpret Graident Check Errors?]
+
+[source, python]
+----
+from torch.autograd.gradcheck import gradcheck
+
+def test_sanity(self):
+    input = (Variable(torch.randn(20, 20).double(), requires_grad=True), )
+    model = nn.Linear(20, 1).double()
+    test = gradcheck(model, input, eps=1e-6, atol=1e-4)
+    print(test)
+----
