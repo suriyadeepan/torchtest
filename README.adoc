@@ -1,17 +1,17 @@
 = TorchTest
 
-A Simple Testing Framework for PyTorch, inspired by [mltest](https://github.com/Thenerdstation/mltest/blob/master/mltest/mltest.py) 
+A Simple Testing Framework for PyTorch, inspired by https://github.com/Thenerdstation/mltest/blob/master/mltest/mltest.py[mltest]
 
 
 == Tests
 
-* Variables Change \/ Don't Change
+* *Variables Change/Don't Change*
 
-* Logits Range
+* *Logits Range*
 
-* Input Dependencies
+* *Input Dependencies*
 
-* NaN and Inf Tensors
+* *NaN and Inf Tensors*
 
 
 == Notes
