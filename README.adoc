@@ -5,13 +5,13 @@ A Simple Testing Framework for PyTorch, inspired by https://github.com/Thenerdst
 
 == Tests
 
-* *Variables Change/Don't Change*
+* Variables Change/Don't Change
 
-* *Logits Range*
+* Logits Range
 
-* *Input Dependencies*
+* Input Dependencies
 
-* *NaN and Inf Tensors*
+* NaN and Inf Tensors
 
 
 == Notes
