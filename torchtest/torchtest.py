@@ -74,8 +74,8 @@ def _var_change_helper(vars_change, model, loss_fn, optim, batch):
   _train_step(model, loss_fn, optim, batch)
 
   # check if variables have changed
-  for p0, p1 in zip(initial_params, 
-      [ p for p in model.parameters() if p.requires_grad ]):
+  for p0, (name, p1) in zip(initial_params, 
+      [ np for np in model.named_parameters() if np[1].requires_grad ]):
     try:
       if vars_change:
         assert not torch.equal(p0, p1)
@@ -84,7 +84,7 @@ def _var_change_helper(vars_change, model, loss_fn, optim, batch):
     except AssertionError:
       raise VariablesChangeException( # error message
           "{var_name} {msg}".format(
-            var_name=p0, 
+            var_name=name, 
             msg='did not change!' if vars_change else 'changed!' 
             )
           )
