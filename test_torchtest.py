@@ -44,7 +44,8 @@ if __name__ == '__main__':
       batch,
       non_train_vars= [ # embedding is supposed to be fixed 
         ('embedding.weight', model.embedding.weight) # variable(s) to check for change
-        ]
+        ],
+      test_gpu_available=True
       )
 
   # test for change in a subset of variables

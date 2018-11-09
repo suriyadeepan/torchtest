@@ -164,7 +164,8 @@ def test_suite(model, loss_fn, optim, batch,
     test_output_range=True,
     test_vars_change=True,
     test_nan_vals=True,
-    test_inf_vals=True):
+    test_inf_vals=True,
+    test_gpu_available=False):
 
   # check if all variables change
   if test_vars_change:
@@ -191,7 +192,13 @@ def test_suite(model, loss_fn, optim, batch,
       assert_any_less_than(model_out, output_range[1])
 
   # NaN Test
-  assert_never_nan(model_out)
+  if test_nan_vals:
+    assert_never_nan(model_out)
 
   # Inf Test
-  assert_never_inf(model_out)
+  if test_inf_vals:
+    assert_never_inf(model_out)
+
+  # GPU test
+  if test_gpu_available:
+    assert_uses_gpu()
