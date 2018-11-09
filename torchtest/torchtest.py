@@ -4,24 +4,23 @@ import torch
 MODEL_OUT_LOW = -1
 MODEL_OUT_HIGH = 1
 
+class GpuUnusedException(Exception):
+  pass
 
 class VariablesChangeException(Exception):
-    pass
+  pass
 
 class RangeException(Exception):
-    pass
+  pass
 
 class DependencyException(Exception):
-    pass
+  pass
 
 class NaNTensorException(Exception):
-    pass
+  pass
 
 class InfTensorException(Exception):
-    pass
-
-def assert_uses_gpu():
-  return torch.cuda.is_available()
+  pass
 
 def setup(seed=0):
   torch.manual_seed(seed)
@@ -89,6 +88,14 @@ def _var_change_helper(vars_change, model, loss_fn, optim, batch):
             msg='did not change!' if vars_change else 'changed!' 
             )
           )
+
+def assert_uses_gpu():
+  try:
+    assert torch.cuda.is_available()
+  except AssertionError:
+    raise GpuUnusedException(
+        "GPU inaccessible"
+        )
 
 def assert_vars_change(model, loss_fn, optim, batch):
   _var_change_helper(True, model, loss_fn, optim, batch)

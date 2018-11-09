@@ -1,4 +1,5 @@
 from torchtest.torchtest import test_suite
+from torchtest.torchtest import assert_uses_gpu
 import tc
 
 import torch
@@ -29,6 +30,9 @@ if __name__ == '__main__':
       torch.randint(0, hparams['output_size'], (hparams['batch_size'],)).long() 
       ]
  
+  # check if GPU is in use
+  # assert_uses_gpu()
+
   # run all tests
   test_suite(
       model, hparams['loss_fn'],
