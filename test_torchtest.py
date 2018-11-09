@@ -23,7 +23,9 @@ if __name__ == '__main__':
     }
 
   # create model
-  model = tc.LstmClassifier(hparams) 
+  model = tc.LstmClassifier(hparams, weights={
+    'glove' : torch.rand(hparams['vocab_size'], hparams['emb_dim'])
+    }) 
 
   # create a random batch
   #  lets say seq_len = 15
@@ -36,18 +38,21 @@ if __name__ == '__main__':
   # assert_uses_gpu()
 
   # run all tests
-  """
   test_suite(
       model, hparams['loss_fn'],
       torch.optim.Adam([p for p in model.parameters() if p.requires_grad]), 
-      batch
+      batch,
+      non_train_vars= [ # embedding is supposed to be fixed 
+        ('embedding.weight', model.embedding.weight) # variable(s) to check for change
+        ]
       )
-  """
 
   # test for change in a subset of variables
+  """
   assert_vars_same(
       model, hparams['loss_fn'],
       torch.optim.Adam([p for p in model.parameters() if p.requires_grad]), 
       batch, 
       [ ('embedding.weight', model.embedding.weight) ] # variable(s) to check for change
       )
+  """
