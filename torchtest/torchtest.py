@@ -64,8 +64,7 @@ def _forward_step(model, batch):
     # forward
     return model(inputs)
 
-def _var_change_helper(vars_change, model, loss_fn, optim, batch, params=None, 
-    train_step=True):
+def _var_change_helper(vars_change, model, loss_fn, optim, batch, params=None): 
   if params is None:
     # get a list of params that are allowed to change
     params = [ np for np in model.named_parameters() if np[1].requires_grad ]
@@ -73,9 +72,8 @@ def _var_change_helper(vars_change, model, loss_fn, optim, batch, params=None,
   # take a copy
   initial_params = [ (name, p.clone()) for (name, p) in params ]
 
-  # run a train step
-  if train_step:
-    _train_step(model, loss_fn, optim, batch)
+  # run a training step
+  _train_step(model, loss_fn, optim, batch)
 
   # check if variables have changed
   for (_, p0), (name, p1) in zip(initial_params, params):
@@ -100,11 +98,11 @@ def assert_uses_gpu():
         "GPU inaccessible"
         )
 
-def assert_vars_change(model, loss_fn, optim, batch, params=None, train_step=True):
-  _var_change_helper(True, model, loss_fn, optim, batch, params, train_step=True)
+def assert_vars_change(model, loss_fn, optim, batch, params=None):
+  _var_change_helper(True, model, loss_fn, optim, batch, params)
 
-def assert_vars_same(model, loss_fn, optim, batch, params=None, train_step=True):
-  _var_change_helper(False, model, loss_fn, optim, batch, params, train_step=True)
+def assert_vars_same(model, loss_fn, optim, batch, params=None):
+  _var_change_helper(False, model, loss_fn, optim, batch, params)
 
 def assert_any_greater_than(tensor, value):
   try:
@@ -167,8 +165,6 @@ def test_suite(model, loss_fn, optim, batch,
     test_vars_change=True,
     test_nan_vals=True,
     test_inf_vals=True):
-  # run a training step
-  _train_step(model, loss_fn, optim, batch)
 
   # check if all variables change
   if test_vars_change:
@@ -176,17 +172,11 @@ def test_suite(model, loss_fn, optim, batch,
 
   # check if train_vars change
   if train_vars is not None:
-    assert_vars_change(model, loss_fn, optim, batch, 
-        params=train_vars,
-        train_step=False
-        )
+    assert_vars_change(model, loss_fn, optim, batch, params=train_vars)
 
   # check if non_train_vars don't change
   if non_train_vars is not None:
-    assert_vars_same(model, loss_fn, optim, batch, 
-        params=non_train_vars,
-        train_step=False
-        )
+    assert_vars_same(model, loss_fn, optim, batch, params=non_train_vars)
 
   # run forward once
   model_out = _forward_step(model, batch)
