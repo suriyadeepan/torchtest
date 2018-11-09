@@ -1,5 +1,7 @@
 from torchtest.torchtest import test_suite
 from torchtest.torchtest import assert_uses_gpu
+from torchtest.torchtest import assert_vars_change
+from torchtest.torchtest import assert_vars_same
 import tc
 
 import torch
@@ -34,8 +36,18 @@ if __name__ == '__main__':
   # assert_uses_gpu()
 
   # run all tests
+  """
   test_suite(
       model, hparams['loss_fn'],
       torch.optim.Adam([p for p in model.parameters() if p.requires_grad]), 
       batch
+      )
+  """
+
+  # test for change in a subset of variables
+  assert_vars_same(
+      model, hparams['loss_fn'],
+      torch.optim.Adam([p for p in model.parameters() if p.requires_grad]), 
+      batch, 
+      [ ('embedding.weight', model.embedding.weight) ] # variable(s) to check for change
       )

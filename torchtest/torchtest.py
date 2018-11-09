@@ -64,18 +64,19 @@ def _forward_step(model, batch):
     # forward
     return model(inputs)
 
-def _var_change_helper(vars_change, model, loss_fn, optim, batch):
-  # get a list of params that are allowed to change
-  trainable_params = [ p for p in model.parameters() if p.requires_grad ]
+def _var_change_helper(vars_change, model, loss_fn, optim, batch, params=None):
+  if params is None:
+    # get a list of params that are allowed to change
+    params = [ np for np in model.named_parameters() if np[1].requires_grad ]
+
   # take a copy
-  initial_params = [ p.clone() for p in trainable_params ]
+  initial_params = [ (name, p.clone()) for (name, p) in params ]
 
   # run a train step
   _train_step(model, loss_fn, optim, batch)
 
   # check if variables have changed
-  for p0, (name, p1) in zip(initial_params, 
-      [ np for np in model.named_parameters() if np[1].requires_grad ]):
+  for (_, p0), (name, p1) in zip(initial_params, params):
     try:
       if vars_change:
         assert not torch.equal(p0, p1)
@@ -97,11 +98,11 @@ def assert_uses_gpu():
         "GPU inaccessible"
         )
 
-def assert_vars_change(model, loss_fn, optim, batch):
-  _var_change_helper(True, model, loss_fn, optim, batch)
+def assert_vars_change(model, loss_fn, optim, batch, params=None):
+  _var_change_helper(True, model, loss_fn, optim, batch, params)
 
-def assert_vars_same(model, loss_fn, optim, batch):
-  _var_change_helper(False, model, loss_fn, optim, batch)
+def assert_vars_same(model, loss_fn, optim, batch, params=None):
+  _var_change_helper(False, model, loss_fn, optim, batch, params)
 
 def assert_any_greater_than(tensor, value):
   try:
@@ -158,6 +159,8 @@ def assert_never_inf(tensor):
 
 def test_suite(model, loss_fn, optim, batch,
     output_range=None,
+    train_vars=None,
+    non_train_vars=None,
     test_output_range=True,
     test_vars_change=True,
     test_nan_vals=True,

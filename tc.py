@@ -138,8 +138,8 @@ class LstmClassifier(nn.Module):
     self.h = h[-1]
 
     # linear layer
-    linear_out = self.linear(h0[-1]) # NOTE BUG planted here
-    #linear_out = self.linear(h[-1])
+    #linear_out = self.linear(h0[-1]) # NOTE BUG planted here
+    linear_out = self.linear(h[-1])
 
     # softmax layer
     # softmax_out = F.log_softmax(linear_out, dim=-1)
