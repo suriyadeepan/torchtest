@@ -1,5 +1,9 @@
 import torch
 
+# default model output range
+MODEL_OUT_LOW = -1
+MODEL_OUT_HIGH = 1
+
 
 class VariablesChangeException(Exception):
     pass
@@ -46,8 +50,23 @@ def _train_step(model, loss_fn, optim, batch):
   # optimization step
   optim.step()
 
-def _var_change_helper(vars_change, model, loss_fn, optim, batch):
+def _forward_step(model, batch):
+  # put model in eval mode
+  model.eval()
+  if torch.cuda.is_available():
+    model.cuda()
 
+  with torch.no_grad():
+    # inputs and targets
+    inputs = batch[0]
+    # move data to GPU
+    if torch.cuda.is_available():
+      inputs = inputs.cuda()
+    # forward
+    return model(inputs)
+
+def _var_change_helper(vars_change, model, loss_fn, optim, batch):
+  # get a list of params that are allowed to change
   trainable_params = [ p for p in model.parameters() if p.requires_grad ]
   # take a copy
   initial_params = [ p.clone() for p in trainable_params ]
@@ -129,3 +148,32 @@ def assert_never_inf(tensor):
     assert torch.isfinite(tensor).byte().any()
   except AssertionError:
     raise RangeException("There was NaN value in tensor")
+
+def test_suite(model, loss_fn, optim, batch,
+    output_range=None,
+    test_output_range=True,
+    test_vars_change=True,
+    test_nan_vals=True,
+    test_inf_vals=True):
+
+  # check if all variables change
+  if test_vars_change:
+    assert_vars_change(model, loss_fn, optim, batch)
+
+  # run forward once
+  model_out = _forward_step(model, batch)
+
+  # range tests
+  if test_output_range:
+    if output_range is None:
+      assert_any_greater_than(model_out, MODEL_OUT_LOW)
+      assert_any_less_than(model_out, MODEL_OUT_HIGH)
+    else:
+      assert_any_greater_than(model_out, output_range[0])
+      assert_any_less_than(model_out, output_range[1])
+
+  # NaN Test
+  assert_never_nan(model_out)
+
+  # Inf Test
+  assert_never_inf(model_out)

@@ -1,4 +1,4 @@
-from torchtest.torchtest import assert_vars_change
+from torchtest.torchtest import test_suite
 import tc
 
 import torch
@@ -29,7 +29,9 @@ if __name__ == '__main__':
       torch.randint(0, hparams['output_size'], (hparams['batch_size'],)).long() 
       ]
  
-  # test variable change
-  assert_vars_change(model, F.cross_entropy, 
+  # run all tests
+  test_suite(
+      model, hparams['loss_fn'],
       torch.optim.Adam([p for p in model.parameters() if p.requires_grad]), 
-      batch)
+      batch
+      )
