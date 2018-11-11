@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from torchtest import torchtest as tt
+import torchtest as tt
 
 
 """
