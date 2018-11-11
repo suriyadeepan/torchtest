@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='torchtest',
-    version='0.3.1',
+    version='0.4',
     packages=['torchtest'],
     license='GNU Affero General Public License v3 or later (AGPLv3+)',
     long_description=open('README.adoc').read(),
