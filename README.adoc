@@ -1,14 +1,15 @@
 = torchtest
 
-A tiny test suite for pytorch based Machine Learning models, inspired by https://github.com/Thenerdstation/mltest/blob/master/mltest/mltest.py[mltest]. 
+A Tiny Test Suite for pytorch based Machine Learning models, inspired by https://github.com/Thenerdstation/mltest/blob/master/mltest/mltest.py[mltest]. 
 Chase Roberts lists out 4 basic tests in his https://medium.com/@keeper6928/mltest-automatically-test-neural-network-models-in-one-function-call-eb6f1fa5019d[medium post] about mltest. 
-torchtest is sort of a pytorch port of mltest which was written for tensorflow models.
+torchtest is mostly a pytorch port of mltest(which was written for tensorflow).
 
 == Installation
 
 [source, bash]
 ----
-pip3 install --upgrade torchtest
+pip3 install --upgrade torchtest # in venv
+# insert "sudo" when installing globally
 ----
 
 == Tests
@@ -16,6 +17,7 @@ pip3 install --upgrade torchtest
 
 [source, python]
 ----
+# necessary imports
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -48,10 +50,10 @@ tt.assert_vars_change(
 
 [source, python]
 ----
+""" FAILURE """
 # let's try to break this, so the test fails
 params_to_train = [ np[1] for np in model.named_parameters() if np[0] is not 'bias' ]
 # run test now
-""" FAILURE """
 tt.assert_vars_change(
     model=model, 
     loss_fn=F.cross_entropy, 
@@ -96,6 +98,7 @@ tt.test_suite(model, loss_fn, optim, batch,
 
 [source, python]
 ----
+""" FAILURE """
 #  let's tweak the model to fail the test
 model.bias = nn.Parameter(2 + torch.randn(2, ))
 
@@ -113,6 +116,7 @@ tt.test_suite(
 
 [source, python]
 ----
+""" FAILURE """
 model.bias = nn.Parameter(float('NaN') * torch.randn(2, ))
 
 tt.test_suite(
@@ -126,6 +130,7 @@ tt.test_suite(
 
 [source, python]
 ----
+""" FAILURE """
 model.bias = nn.Parameter(float('Inf') * torch.randn(2, ))
 
 tt.test_suite(
@@ -134,8 +139,3 @@ tt.test_suite(
     test_inf_vals=True
     )
 ----
-
-== TODO
-
-* Add Docstring
-* Generate documentation
