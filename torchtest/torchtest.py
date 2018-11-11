@@ -149,22 +149,22 @@ def assert_never_nan(tensor):
   try:
     assert not torch.isnan(tensor).byte().any()
   except AssertionError:
-    raise RangeException("There was NaN value in tensor")
+    raise NaNTensorException("There was a NaN value in tensor")
 
 def assert_never_inf(tensor):
   try:
     assert torch.isfinite(tensor).byte().any()
   except AssertionError:
-    raise RangeException("There was NaN value in tensor")
+    raise InfTensorException("There was an Inf value in tensor")
 
 def test_suite(model, loss_fn, optim, batch,
     output_range=None,
     train_vars=None,
     non_train_vars=None,
-    test_output_range=True,
-    test_vars_change=True,
-    test_nan_vals=True,
-    test_inf_vals=True,
+    test_output_range=False,
+    test_vars_change=False,
+    test_nan_vals=False,
+    test_inf_vals=False,
     test_gpu_available=False):
 
   # check if all variables change
@@ -185,11 +185,11 @@ def test_suite(model, loss_fn, optim, batch,
   # range tests
   if test_output_range:
     if output_range is None:
-      assert_any_greater_than(model_out, MODEL_OUT_LOW)
-      assert_any_less_than(model_out, MODEL_OUT_HIGH)
+      assert_all_greater_than(model_out, MODEL_OUT_LOW)
+      assert_all_less_than(model_out, MODEL_OUT_HIGH)
     else:
-      assert_any_greater_than(model_out, output_range[0])
-      assert_any_less_than(model_out, output_range[1])
+      assert_all_greater_than(model_out, output_range[0])
+      assert_all_less_than(model_out, output_range[1])
 
   # NaN Test
   if test_nan_vals:
