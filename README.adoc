@@ -8,8 +8,7 @@ torchtest is mostly a pytorch port of mltest(which was written for tensorflow).
 
 [source, bash]
 ----
-pip3 install --upgrade torchtest # in venv
-# insert "sudo" when installing globally
+pip install --upgrade torchtest
 ----
 
 == Tests
@@ -17,13 +16,11 @@ pip3 install --upgrade torchtest # in venv
 
 [source, python]
 ----
-# necessary imports
+# imports for examples
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-
-import torchtest as tt
 ----
 
 
@@ -31,6 +28,8 @@ import torchtest as tt
 
 [source, python]
 ----
+from torchtest import assert_vars_change
+
 inputs = Variable(torch.randn(20, 20))
 targets = Variable(torch.randint(0, 2, (20,))).long()
 batch = [inputs, targets]
@@ -41,7 +40,7 @@ print('Our list of parameters', [ np[0] for np in model.named_parameters() ])
 
 # do they change after a training step?
 #  let's run a train step and see
-tt.assert_vars_change(
+assert_vars_change(
     model=model, 
     loss_fn=F.cross_entropy, 
     optim=torch.optim.Adam(model.parameters()),
@@ -54,7 +53,7 @@ tt.assert_vars_change(
 # let's try to break this, so the test fails
 params_to_train = [ np[1] for np in model.named_parameters() if np[0] is not 'bias' ]
 # run test now
-tt.assert_vars_change(
+assert_vars_change(
     model=model, 
     loss_fn=F.cross_entropy, 
     optim=torch.optim.Adam(params_to_train),
@@ -68,9 +67,11 @@ tt.assert_vars_change(
 
 [source, python]
 ----
+from torchtest import assert_vars_same
+
 # What if bias is not supposed to change, by design?
 #  test to see if bias remains the same after training
-tt.assert_vars_same(
+assert_vars_same(
     model=model, 
     loss_fn=F.cross_entropy, 
     optim=torch.optim.Adam(params_to_train),
@@ -84,11 +85,13 @@ tt.assert_vars_same(
 
 [source, python]
 ----
+from torchtest import test_suite
+
 # NOTE : bias is fixed (not trainable)
 optim = torch.optim.Adam(params_to_train)
 loss_fn=F.cross_entropy
 
-tt.test_suite(model, loss_fn, optim, batch, 
+test_suite(model, loss_fn, optim, batch, 
     output_range=(-2, 2),
     test_output_range=True
     )
@@ -102,7 +105,7 @@ tt.test_suite(model, loss_fn, optim, batch,
 #  let's tweak the model to fail the test
 model.bias = nn.Parameter(2 + torch.randn(2, ))
 
-tt.test_suite(
+test_suite(
     model,
     loss_fn, optim, batch, 
     output_range=(-1, 1),
@@ -119,7 +122,7 @@ tt.test_suite(
 """ FAILURE """
 model.bias = nn.Parameter(float('NaN') * torch.randn(2, ))
 
-tt.test_suite(
+test_suite(
     model,
     loss_fn, optim, batch, 
     test_nan_vals=True
@@ -133,7 +136,7 @@ tt.test_suite(
 """ FAILURE """
 model.bias = nn.Parameter(float('Inf') * torch.randn(2, ))
 
-tt.test_suite(
+test_suite(
     model,
     loss_fn, optim, batch, 
     test_inf_vals=True
