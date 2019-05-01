@@ -45,5 +45,6 @@ if __name__ == '__main__':
       non_train_vars= [ # embedding is supposed to be fixed 
         ('embedding.weight', model.embedding.weight) # variable(s) to check for change
         ],
-      test_gpu_available=True
+      test_gpu_available=True,
+      device='cuda:0'
       )

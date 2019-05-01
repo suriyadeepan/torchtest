@@ -36,7 +36,7 @@ def setup(seed=0):
   """Set random seed for torch"""
   torch.manual_seed(seed)
 
-def _train_step(model, loss_fn, optim, batch):
+def _train_step(model, loss_fn, optim, batch, device):
   """Run a training step on model for a given batch of data
 
   Parameters of the model accumulate gradients and the optimizer performs
@@ -56,18 +56,16 @@ def _train_step(model, loss_fn, optim, batch):
 
   # put model in train mode
   model.train()
-  if torch.cuda.is_available():
-    model.cuda()
+  model.to(device)
 
   #  run one forward + backward step
   # clear gradient
   optim.zero_grad()
   # inputs and targets
   inputs, targets = batch[0], batch[1]
-  # move data to GPU
-  if torch.cuda.is_available():
-    inputs = inputs.cuda()
-    targets = targets.cuda()
+  # move data to DEVICE
+  inputs = inputs.to(device)
+  targets = targets.to(device)
   # forward
   likelihood = model(inputs)
   # calc loss
@@ -77,7 +75,7 @@ def _train_step(model, loss_fn, optim, batch):
   # optimization step
   optim.step()
 
-def _forward_step(model, batch):
+def _forward_step(model, batch, device):
   """Run a forward step of model for a given batch of data
 
   Parameters
@@ -95,19 +93,17 @@ def _forward_step(model, batch):
 
   # put model in eval mode
   model.eval()
-  if torch.cuda.is_available():
-    model.cuda()
+  model.to(device)
 
   with torch.no_grad():
     # inputs and targets
     inputs = batch[0]
-    # move data to GPU
-    if torch.cuda.is_available():
-      inputs = inputs.cuda()
+    # move data to DEVICE
+    inputs = inputs.to(device)
     # forward
     return model(inputs)
 
-def _var_change_helper(vars_change, model, loss_fn, optim, batch, params=None): 
+def _var_change_helper(vars_change, model, loss_fn, optim, batch, device, params=None): 
   """Check if given variables (params) change or not during training
 
   If parameters (params) aren't provided, check all parameters.
@@ -142,15 +138,15 @@ def _var_change_helper(vars_change, model, loss_fn, optim, batch, params=None):
   initial_params = [ (name, p.clone()) for (name, p) in params ]
 
   # run a training step
-  _train_step(model, loss_fn, optim, batch)
+  _train_step(model, loss_fn, optim, batch, device)
 
   # check if variables have changed
   for (_, p0), (name, p1) in zip(initial_params, params):
     try:
       if vars_change:
-        assert not torch.equal(p0, p1)
+        assert not torch.equal(p0.to(device), p1.to(device))
       else:
-        assert torch.equal(p0, p1)
+        assert torch.equal(p0.to(device), p1.to(device))
     except AssertionError:
       raise VariablesChangeException( # error message
           "{var_name} {msg}".format(
@@ -175,7 +171,7 @@ def assert_uses_gpu():
         "GPU inaccessible"
         )
 
-def assert_vars_change(model, loss_fn, optim, batch, params=None):
+def assert_vars_change(model, loss_fn, optim, batch, device, params=None):
   """Make sure that the given parameters (params) DO change during training
 
   If parameters (params) aren't provided, check all parameters.
@@ -199,9 +195,9 @@ def assert_vars_change(model, loss_fn, optim, batch, params=None):
     If params do not change during training
   """
 
-  _var_change_helper(True, model, loss_fn, optim, batch, params)
+  _var_change_helper(True, model, loss_fn, optim, batch, device, params)
 
-def assert_vars_same(model, loss_fn, optim, batch, params=None):
+def assert_vars_same(model, loss_fn, optim, batch, device, params=None):
   """Make sure that the given parameters (params) DO NOT change during training
 
   If parameters (params) aren't provided, check all parameters.
@@ -225,7 +221,7 @@ def assert_vars_same(model, loss_fn, optim, batch, params=None):
     If params change during training
   """
 
-  _var_change_helper(False, model, loss_fn, optim, batch, params)
+  _var_change_helper(False, model, loss_fn, optim, batch, device, params)
 
 def assert_any_greater_than(tensor, value):
   """Make sure that one or more elements of tensor greater than value
@@ -380,7 +376,8 @@ def test_suite(model, loss_fn, optim, batch,
     test_vars_change=False,
     test_nan_vals=False,
     test_inf_vals=False,
-    test_gpu_available=False):
+    test_gpu_available=False,
+    device='cpu'):
   """Test Suite : Runs the tests enabled by the user
 
   If output_range is None, output of model is tested against (MODEL_OUT_LOW, 
@@ -432,18 +429,18 @@ def test_suite(model, loss_fn, optim, batch,
 
   # check if all variables change
   if test_vars_change:
-    assert_vars_change(model, loss_fn, optim, batch)
+    assert_vars_change(model, loss_fn, optim, batch, device)
 
   # check if train_vars change
   if train_vars is not None:
-    assert_vars_change(model, loss_fn, optim, batch, params=train_vars)
+    assert_vars_change(model, loss_fn, optim, batch, device, params=train_vars)
 
   # check if non_train_vars don't change
   if non_train_vars is not None:
-    assert_vars_same(model, loss_fn, optim, batch, params=non_train_vars)
+    assert_vars_same(model, loss_fn, optim, batch, device, params=non_train_vars)
 
   # run forward once
-  model_out = _forward_step(model, batch)
+  model_out = _forward_step(model, batch, device)
 
   # range tests
   if test_output_range:
