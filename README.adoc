@@ -142,3 +142,24 @@ test_suite(
     test_inf_vals=True
     )
 ----
+
+== Debugging
+
+[source, bash]
+----
+torchtest\torchtest.py", line 151, in _var_change_helper
+assert not torch.equal(p0, p1)
+RuntimeError: Expected object of backend CPU but got backend CUDA for argument #2 'other'
+----
+
+When you are making use of a GPU, you should explicitly specify `device=cuda:0'. By default `device` is set to `cpu`. See https://github.com/suriyadeepan/torchtest/issues/1[issue #1] for more information.
+
+[source, python]
+----
+test_suite(
+    model,  # a model moved to GPU
+    loss_fn, optim, batch, 
+    test_inf_vals=True,
+    device='cuda:0'
+    )
+----
