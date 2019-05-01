@@ -152,7 +152,7 @@ assert not torch.equal(p0, p1)
 RuntimeError: Expected object of backend CPU but got backend CUDA for argument #2 'other'
 ----
 
-When you are making use of a GPU, you should explicitly specify `device=cuda:0'. By default `device` is set to `cpu`. See https://github.com/suriyadeepan/torchtest/issues/1[issue #1] for more information.
+When you are making use of a GPU, you should explicitly specify `device=cuda:0`. By default `device` is set to `cpu`. See https://github.com/suriyadeepan/torchtest/issues/1[issue #1] for more information.
 
 [source, python]
 ----
