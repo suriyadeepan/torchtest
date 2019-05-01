@@ -163,3 +163,18 @@ test_suite(
     device='cuda:0'
     )
 ----
+
+== Citation
+
+[source, tex]
+----
+@misc{Ram2019,
+  author = {Suriyadeepan Ramamoorthy},
+  title = {torchtest},
+  year = {2019},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/suriyadeepan/torchtest}},
+  commit = {42ba442e54e5117de80f761a796fba3589f9b223}
+}
+----
