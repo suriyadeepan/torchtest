@@ -32,6 +32,27 @@ class NaNTensorException(Exception):
 class InfTensorException(Exception):
   pass
 
+def _preprocess_tuple(X, cuda=True, device=None, half=False):
+    new_tuple = []
+    for tensor in X:
+        if device:
+            tensor = tensor.to(device)
+        else:
+            if cuda:
+                tensor = tensor.cuda()
+            else:
+                tensor = tensor.cpu()
+
+def preprocess_input(dict_tensor, cuda=True, device=None, half=False):
+    if isinstance(dict_tensor, dict):
+        dict_tensor = {k: _preprocess_input(v, cuda=cuda, device=device, half=half) if not isinstance(v,
+                                                                                                      tuple) else _preprocess_tuple(
+            v, cuda, device, half) for k, v in dict_tensor.items()}
+    else:
+        dict_tensor = _preprocess_input(dict_tensor, cuda=cuda, device=device, half=half)
+
+    return dict_tensor
+  
 def setup(seed=0):
   """Set random seed for torch"""
   torch.manual_seed(seed)
@@ -64,8 +85,8 @@ def _train_step(model, loss_fn, optim, batch, device):
   # inputs and targets
   inputs, targets = batch[0], batch[1]
   # move data to DEVICE
-  inputs = inputs.to(device)
-  targets = targets.to(device)
+  inputs = preprocess_input(inputs, device=device)
+  targets = preprocess_input(targets, device=device)
   # forward
   likelihood = model(inputs)
   # calc loss
