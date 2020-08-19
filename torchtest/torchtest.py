@@ -35,7 +35,7 @@ class InfTensorException(Exception):
 def preprocess_input(input, device=None, half=False):
     if isinstance(input, dict):
         input = {k: preprocess_input(v, device=device, half=half) for k, v in input.items()}
-    elif isinstance(input, [tuple, list]):
+    elif isinstance(input, (tuple, list)):
         input = tuple(preprocess_input(v, device, half) for v in input)
     else:
         input = process_tensor(input, device=device, half=half)
