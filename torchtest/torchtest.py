@@ -32,32 +32,26 @@ class NaNTensorException(Exception):
 class InfTensorException(Exception):
   pass
 
-def _preprocess_input(X, cuda=True, device=None, half=False):
-    if not isinstance(X, torch.Tensor):
-        X = torch.tensor(X)
+def preprocess_input(input, device=None, half=False):
+    if isinstance(input, dict):
+        input = {k: preprocess_input(v, device=device, half=half) for k, v in input.items()}
+    elif isinstance(input, [tuple, list]):
+        input = tuple(preprocess_input(v, device, half) for v in input)
+    else:
+        input = process_tensor(input, device=device, half=half)
+
+    return input
+
+def process_tensor(input, device=None, half=False):
+    if not isinstance(input, torch.Tensor):
+        input = torch.tensor(input)
 
     if device:
-        X = X.to(device)
-    else:
-        if cuda:
-            X = X.cuda()
-        else:
-            X = X.cpu()
-
+        input = input.to(device)
     if half:
-        X = X.half()
+        input = input.half()
 
-    return X
-
-def preprocess_input(dict_tensor, cuda=True, device=None, half=False):
-    if isinstance(dict_tensor, dict):
-        dict_tensor = {k: _preprocess_input(v, cuda=cuda, device=device, half=half) if not isinstance(v,
-                                                                                                      tuple) else _preprocess_tuple(
-            v, cuda, device, half) for k, v in dict_tensor.items()}
-    else:
-        dict_tensor = _preprocess_input(dict_tensor, cuda=cuda, device=device, half=half)
-
-    return dict_tensor
+    return input
   
 def setup(seed=0):
   """Set random seed for torch"""
