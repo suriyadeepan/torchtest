@@ -32,16 +32,22 @@ class NaNTensorException(Exception):
 class InfTensorException(Exception):
   pass
 
-def _preprocess_tuple(X, cuda=True, device=None, half=False):
-    new_tuple = []
-    for tensor in X:
-        if device:
-            tensor = tensor.to(device)
+def _preprocess_input(X, cuda=True, device=None, half=False):
+    if not isinstance(X, torch.Tensor):
+        X = torch.tensor(X)
+
+    if device:
+        X = X.to(device)
+    else:
+        if cuda:
+            X = X.cuda()
         else:
-            if cuda:
-                tensor = tensor.cuda()
-            else:
-                tensor = tensor.cpu()
+            X = X.cpu()
+
+    if half:
+        X = X.half()
+
+    return X
 
 def preprocess_input(dict_tensor, cuda=True, device=None, half=False):
     if isinstance(dict_tensor, dict):
