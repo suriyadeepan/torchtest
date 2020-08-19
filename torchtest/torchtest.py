@@ -32,14 +32,15 @@ class NaNTensorException(Exception):
 class InfTensorException(Exception):
   pass
 
-def preprocess_input(input, device=None, half=False):
+def preprocess_input(input, device, half=False):
     if isinstance(input, dict):
-        input = {k: preprocess_input(v, device=device, half=half) for k, v in input.items()}
-    elif isinstance(input, (tuple, list)):
+        input = {k: preprocess_input(v, device, half) for k, v in input.items()}
+    elif isinstance(input, tuple):
         input = tuple(preprocess_input(v, device, half) for v in input)
+    elif isinstance(input, list):
+        input = [preprocess_input(v, device, half) for v in input]
     else:
         input = process_tensor(input, device=device, half=half)
-
     return input
 
 def process_tensor(input, device=None, half=False):
