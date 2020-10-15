@@ -54,7 +54,7 @@ def _pack_batch(x, device):
 
     def _helper(x):
         if isinstance(x, torch.Tensor):
-            x.to(device)
+            x = x.to(device)
             return x
 
         output = [_helper(item) for item in x]
@@ -63,7 +63,7 @@ def _pack_batch(x, device):
 
     if isinstance(x, torch.Tensor):
         # For backwards compatability
-        return (x,)
+        return (x.to(device),)
     else:
         return _helper(x)
 
